@@ -1,0 +1,4 @@
+repository "Black Smith Game/Black Smith Game@5773412688831@cloud"
+  path "/"
+    br "/main"
+    co "/main"

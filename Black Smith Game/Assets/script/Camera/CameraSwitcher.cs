@@ -1,27 +1,23 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Unity.Cinemachine;
 
 public class CameraSwitcher : MonoBehaviour
 {
-    public GameObject camera1;
-    public GameObject camera2;
+    public CinemachineCamera[] camera;
 
-    private bool usingCamera1 = true;
+   
 
     void Start()
     {
-        camera1.SetActive(true);
-        camera2.SetActive(false);
+        SwitchToCamera(0);
     }
 
-    void Update()
+    public void SwitchToCamera(int cameraIndex)
     {
-        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        for(int i = 0; i <camera.Length; i++)
         {
-            usingCamera1 = !usingCamera1;
-
-            camera1.SetActive(usingCamera1);
-            camera2.SetActive(!usingCamera1);
+            camera[i].Priority = (i == cameraIndex) ? 10 : 0;
         }
     }
 }

@@ -1,6 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine;
 using Unity.Cinemachine;
 
 public class CameraSwitcher : MonoBehaviour
@@ -18,6 +16,9 @@ public class CameraSwitcher : MonoBehaviour
     [Header("Cinemachine Cameras")]
     public CinemachineCamera[] cameras;
 
+    [Header("Forging")]
+    public ForgingGameManager forgingGameManager;
+
     public int CurrentCamera { get; private set; }
     public CameraView CurrentView { get; private set; }
 
@@ -28,6 +29,8 @@ public class CameraSwitcher : MonoBehaviour
 
     private void Start()
     {
+        Debug.Log("CameraSwitcher Loaded");
+
         SwitchToCamera(0);
     }
 
@@ -48,6 +51,25 @@ public class CameraSwitcher : MonoBehaviour
         }
 
         Debug.Log("Switched to: " + CurrentView);
+
+        if (forgingGameManager == null)
+        {
+            Debug.LogError("ForgingGameManager reference is missing!");
+            return;
+        }
+
+        if (CurrentView == CameraView.Anvil)
+        {
+            Debug.Log("Player entered Anvil view.");
+
+            forgingGameManager.ShowStartButton();
+        }
+        else
+        {
+            Debug.Log("Player left Anvil view.");
+
+            forgingGameManager.HideStartButton();
+        }
     }
 
     public bool IsCameraActive(CameraView view)

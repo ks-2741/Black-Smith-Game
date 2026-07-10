@@ -17,28 +17,25 @@ public class HammerStrike : MonoBehaviour
     void Start()
     {
         hammer.SetActive(false);
-        Debug.Log("Hammer hidden on start.");
+        Debug.Log("Hammer hidden.");
     }
 
     void Update()
     {
-        // Only allow hammering in the Anvil camera
         if (!CameraSwitcher.Instance.IsCameraActive(CameraSwitcher.CameraView.Anvil))
             return;
 
-        // Detect left mouse click
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
-            Debug.Log("Left mouse button pressed.");
+            Debug.Log("Mouse Click");
 
             if (canStrike)
             {
-                Debug.Log("Starting hammer strike.");
                 StartCoroutine(StrikeHammer());
             }
             else
             {
-                Debug.Log("Hammer is on cooldown.");
+                Debug.Log("Hammer Cooling Down");
             }
         }
     }
@@ -47,21 +44,20 @@ public class HammerStrike : MonoBehaviour
     {
         canStrike = false;
 
-        Debug.Log("Showing hammer.");
         hammer.SetActive(true);
 
-        Debug.Log("Playing HammerStrike animation.");
+        Debug.Log("Playing HammerStrike animation");
+
         hammerAnimator.Play("HammerStrike", 0, 0);
 
         yield return new WaitForSeconds(animationTime);
 
-        Debug.Log("Hiding hammer.");
         hammer.SetActive(false);
 
-        Debug.Log("Cooldown started.");
         yield return new WaitForSeconds(cooldown);
 
         canStrike = true;
-        Debug.Log("Cooldown finished. Hammer ready.");
+
+        Debug.Log("Hammer Ready");
     }
 }

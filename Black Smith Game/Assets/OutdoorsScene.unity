@@ -7571,9 +7571,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 735762108}
-        m_TargetAssemblyTypeName: ForgingGameManager, Assembly-CSharp
-        m_MethodName: ContinueForging
+      - m_Target: {fileID: 23408419}
+        m_TargetAssemblyTypeName: SmeltingGameManager, Assembly-CSharp
+        m_MethodName: ExitSmelting
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

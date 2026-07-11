@@ -56,22 +56,18 @@ public class PromptButton : MonoBehaviour
 
     void RandomisePosition()
     {
-        RectTransform container =
-            transform.parent.GetComponent<RectTransform>();
+        RectTransform rt = GetComponent<RectTransform>();
 
-        RectTransform rt =
-            GetComponent<RectTransform>();
+        Canvas canvas = GetComponentInParent<Canvas>();
 
-        float x = Random.Range(
-            -container.rect.width / 2 + 75,
-             container.rect.width / 2 - 75);
+        float width = canvas.GetComponent<RectTransform>().rect.width;
+        float height = canvas.GetComponent<RectTransform>().rect.height;
 
-        float y = Random.Range(
-            -container.rect.height / 2 + 75,
-             container.rect.height / 2 - 75);
+        float x = Random.Range(-width / 2 + 100, width / 2 - 100);
+        float y = Random.Range(-height / 2 + 100, height / 2 - 100);
 
         rt.anchoredPosition = new Vector2(x, y);
 
-        Debug.Log("Prompt Position: " + rt.anchoredPosition);
+        Debug.Log("Prompt Position = " + rt.anchoredPosition);
     }
 }

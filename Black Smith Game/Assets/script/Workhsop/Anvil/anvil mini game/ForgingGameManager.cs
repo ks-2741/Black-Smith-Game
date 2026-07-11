@@ -6,8 +6,12 @@ public class ForgingGameManager : MonoBehaviour
 {
     [Header("UI")]
     public GameObject startButton;
+    public GameObject exitButton;
+    public GameObject stationButtons;
+
     public RectTransform promptContainer;
     public PromptButton promptPrefab;
+
     public TMP_Text timerText;
     public TMP_Text resultText;
 
@@ -17,6 +21,16 @@ public class ForgingGameManager : MonoBehaviour
 
     private int score;
     private int promptsCompleted;
+    private Coroutine gameLoop;
+
+    [Header("Results Screen")]
+    public GameObject gameplayUI;
+    public GameObject resultsCanvas;
+
+    public TMP_Text weaponNameText;
+    public TMP_Text qualityText;
+    public TMP_Text sellValueText;
+
 
     void Start()
     {
@@ -24,6 +38,12 @@ public class ForgingGameManager : MonoBehaviour
 
         if (startButton == null)
             Debug.LogError("Start Button not assigned!");
+
+        if (exitButton == null)
+            Debug.LogError("Exit Button not assigned!");
+
+        if (stationButtons == null)
+            Debug.LogError("Station Buttons not assigned!");
 
         if (promptContainer == null)
             Debug.LogError("Prompt Container not assigned!");
@@ -33,8 +53,11 @@ public class ForgingGameManager : MonoBehaviour
 
         startButton.SetActive(false);
 
-        timerText.text = "";
-        resultText.text = "";
+        if (exitButton != null)
+            exitButton.SetActive(false);
+
+        timerText.gameObject.SetActive(false);
+        resultText.gameObject.SetActive(false);
     }
 
     public void ShowStartButton()
@@ -55,22 +78,33 @@ public class ForgingGameManager : MonoBehaviour
 
         HideStartButton();
 
+        if (stationButtons != null)
+            stationButtons.SetActive(false);
+
+        if (exitButton != null)
+            exitButton.SetActive(true);
+
         score = 0;
         promptsCompleted = 0;
 
+        timerText.text = "";
         resultText.text = "";
 
-        StartCoroutine(GameLoop());
+        timerText.gameObject.SetActive(true);
+        resultText.gameObject.SetActive(false);
+
+        gameLoop = StartCoroutine(GameLoop());
     }
 
     IEnumerator GameLoop()
     {
+        Debug.Log("GameLoop Started");
+
         while (promptsCompleted < totalPrompts)
         {
-            Debug.Log($"Round {promptsCompleted + 1}");
+            Debug.Log("Round " + (promptsCompleted + 1));
 
-            PromptButton prompt =
-                Instantiate(promptPrefab, promptContainer);
+            PromptButton prompt = Instantiate(promptPrefab, promptContainer);
 
             prompt.Setup(this, promptLifetime);
 
@@ -97,9 +131,55 @@ public class ForgingGameManager : MonoBehaviour
         Debug.Log("Correct! Score = " + score);
     }
 
+    public void ExitForging()
+    {
+        Debug.Log("Exited Forging");
+
+        if (gameLoop != null)
+            StopCoroutine(gameLoop);
+
+        foreach (Transform child in promptContainer)
+        {
+            Destroy(child.gameObject);
+        }
+
+        timerText.text = "";
+        resultText.text = "";
+
+        timerText.gameObject.SetActive(false);
+        resultText.gameObject.SetActive(false);
+
+        if (stationButtons != null)
+            stationButtons.SetActive(true);
+
+        if (exitButton != null)
+            exitButton.SetActive(false);
+
+        ShowStartButton();
+    }
+    public void ContinueForging()
+    {
+        resultsCanvas.SetActive(false);
+
+        gameplayUI.SetActive(true);
+
+        if (stationButtons != null)
+            stationButtons.SetActive(true);
+
+        if (exitButton != null)
+            exitButton.SetActive(false);
+
+        ShowStartButton();
+
+        resultText.text = "";
+        timerText.text = "";
+    }
+
     void FinishGame()
     {
         timerText.text = "";
+        timerText.gameObject.SetActive(false);
+        resultText.gameObject.SetActive(true);
 
         float percent = (float)score / totalPrompts;
 
@@ -119,8 +199,27 @@ public class ForgingGameManager : MonoBehaviour
         resultText.text = rank;
 
         Debug.Log("===== GAME OVER =====");
-        Debug.Log("Final Score: " + score + "/" + totalPrompts);
+        Debug.Log("Score: " + score + "/" + totalPrompts);
         Debug.Log("Rank: " + rank);
+
+        if (stationButtons != null)
+            stationButtons.SetActive(true);
+
+        if (exitButton != null)
+            exitButton.SetActive(false);
+        timerText.gameObject.SetActive(false);
+
+        gameplayUI.SetActive(false);
+
+        resultsCanvas.SetActive(true);
+
+        weaponNameText.text = "Iron Sword";
+
+        qualityText.text = rank;
+
+        int sellValue = Mathf.RoundToInt(120 * percent);
+
+        sellValueText.text = "£" + sellValue;
 
         ShowStartButton();
     }

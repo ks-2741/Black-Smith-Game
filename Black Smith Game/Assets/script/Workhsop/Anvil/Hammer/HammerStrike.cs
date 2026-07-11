@@ -8,6 +8,9 @@ public class HammerStrike : MonoBehaviour
     public GameObject hammer;
     public Animator hammerAnimator;
 
+    [Header("Forging")]
+    public ForgingGameManager forgingGameManager;
+
     [Header("Timing")]
     public float animationTime = 0.5f;
     public float cooldown = 1f;
@@ -22,6 +25,11 @@ public class HammerStrike : MonoBehaviour
 
     void Update()
     {
+        // Don't allow hammering unless the forging game is active
+        if (forgingGameManager == null || !forgingGameManager.IsForgingActive)
+            return;
+
+        // Only allow hammering at the anvil
         if (!CameraSwitcher.Instance.IsCameraActive(CameraSwitcher.CameraView.Anvil))
             return;
 

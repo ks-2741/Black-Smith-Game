@@ -31,6 +31,8 @@ public class ForgingGameManager : MonoBehaviour
     public TMP_Text qualityText;
     public TMP_Text sellValueText;
 
+    public bool IsForgingActive { get; private set; }
+
 
     void Start()
     {
@@ -76,6 +78,8 @@ public class ForgingGameManager : MonoBehaviour
     {
         Debug.Log("===== FORGING STARTED =====");
 
+        IsForgingActive = true;
+
         HideStartButton();
 
         if (stationButtons != null)
@@ -92,6 +96,8 @@ public class ForgingGameManager : MonoBehaviour
 
         timerText.gameObject.SetActive(true);
         resultText.gameObject.SetActive(false);
+
+        
 
         gameLoop = StartCoroutine(GameLoop());
     }
@@ -135,6 +141,8 @@ public class ForgingGameManager : MonoBehaviour
     {
         Debug.Log("Exited Forging");
 
+        IsForgingActive = false;
+
         if (gameLoop != null)
             StopCoroutine(gameLoop);
 
@@ -159,8 +167,9 @@ public class ForgingGameManager : MonoBehaviour
     }
     public void ContinueForging()
     {
-        resultsCanvas.SetActive(false);
+        Debug.Log("Continue pressed");
 
+        resultsCanvas.SetActive(false);
         gameplayUI.SetActive(true);
 
         if (stationButtons != null)
@@ -177,9 +186,13 @@ public class ForgingGameManager : MonoBehaviour
 
     void FinishGame()
     {
+        IsForgingActive = false;
+
         timerText.text = "";
         timerText.gameObject.SetActive(false);
-        resultText.gameObject.SetActive(true);
+
+        // Hide the old gameplay result text
+        resultText.gameObject.SetActive(false);
 
         float percent = (float)score / totalPrompts;
 
@@ -196,8 +209,6 @@ public class ForgingGameManager : MonoBehaviour
         else
             rank = "Poor";
 
-        resultText.text = rank;
-
         Debug.Log("===== GAME OVER =====");
         Debug.Log("Score: " + score + "/" + totalPrompts);
         Debug.Log("Rank: " + rank);
@@ -207,20 +218,17 @@ public class ForgingGameManager : MonoBehaviour
 
         if (exitButton != null)
             exitButton.SetActive(false);
-        timerText.gameObject.SetActive(false);
 
         gameplayUI.SetActive(false);
-
         resultsCanvas.SetActive(true);
 
-        weaponNameText.text = "Iron Sword";
+        weaponNameText.text = "Iron Blade";
 
+        // Keep this one
         qualityText.text = rank;
 
         int sellValue = Mathf.RoundToInt(120 * percent);
 
         sellValueText.text = "£" + sellValue;
-
-        ShowStartButton();
     }
 }

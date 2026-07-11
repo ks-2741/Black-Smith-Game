@@ -6,6 +6,7 @@ public class SmeltingGameManager : MonoBehaviour
 {
     [Header("UI")]
     public GameObject startButton;
+    public GameObject stationButtons;
     public GameObject smeltingMiniGameUI;
     public GameObject resultsCanvas;
 
@@ -61,6 +62,9 @@ public class SmeltingGameManager : MonoBehaviour
 
         HideStartButton();
 
+        if (stationButtons != null)
+            stationButtons.SetActive(false);
+
         if (resultsCanvas != null)
             resultsCanvas.SetActive(false);
 
@@ -106,6 +110,9 @@ public class SmeltingGameManager : MonoBehaviour
         active = false;
 
         HideStartButton();
+
+        if (stationButtons != null)
+            stationButtons.SetActive(false);
 
         if (temperatureController != null)
             temperatureController.StopTemperature();
@@ -162,6 +169,9 @@ public class SmeltingGameManager : MonoBehaviour
         if (resultsCanvas != null)
             resultsCanvas.SetActive(false);
 
+        if (stationButtons != null)
+            stationButtons.SetActive(true);
+
         ShowStartButton();
 
         if (timerText != null)
@@ -197,6 +207,9 @@ public class SmeltingGameManager : MonoBehaviour
             timerText.text = "";
             timerText.gameObject.SetActive(false);
         }
+
+        if (stationButtons != null)
+            stationButtons.SetActive(true);
 
         ShowStartButton();
     }

@@ -7,11 +7,15 @@ public class TargetZoneMover : MonoBehaviour
     public GrindstoneGameManager gameManager;
     public RectTransform track;
 
+
     [Header("Movement")]
     public float moveSpeed = 4f;
 
     public float minWait = 0.5f;
+
     public float maxWait = 1.5f;
+
+
 
     private RectTransform rect;
 
@@ -20,10 +24,12 @@ public class TargetZoneMover : MonoBehaviour
     private Coroutine moveRoutine;
 
 
+
     void Awake()
     {
         rect = GetComponent<RectTransform>();
     }
+
 
 
     void Start()
@@ -32,37 +38,40 @@ public class TargetZoneMover : MonoBehaviour
     }
 
 
+
     void Update()
     {
         if (gameManager == null)
             return;
 
+
         if (!gameManager.IsGrindingActive())
             return;
 
 
-        rect.anchoredPosition = Vector2.Lerp(
-            rect.anchoredPosition,
-            targetPos,
-            moveSpeed * Time.deltaTime);
+
+        rect.anchoredPosition =
+            Vector2.Lerp(
+                rect.anchoredPosition,
+                targetPos,
+                moveSpeed * Time.deltaTime);
     }
+
 
 
     public void StartMoving()
     {
-        if (!gameObject.activeInHierarchy)
-        {
-            Debug.Log("TargetZone is inactive, cannot start movement.");
-            return;
-        }
+        Debug.Log("TargetZoneMover started");
 
 
         if (moveRoutine != null)
             StopCoroutine(moveRoutine);
 
 
+
         moveRoutine = StartCoroutine(MoveRoutine());
     }
+
 
 
     public void StopMoving()
@@ -75,6 +84,7 @@ public class TargetZoneMover : MonoBehaviour
     }
 
 
+
     IEnumerator MoveRoutine()
     {
         while (true)
@@ -84,6 +94,7 @@ public class TargetZoneMover : MonoBehaviour
                 float limit =
                     track.rect.width / 2f -
                     rect.rect.width / 2f;
+
 
 
                 targetPos = new Vector2(

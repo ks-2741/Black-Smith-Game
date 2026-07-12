@@ -1500,9 +1500,9 @@ MonoBehaviour:
   resultText: {fileID: 1597972518}
   blade: {fileID: 1699295543}
   targetZone: {fileID: 1598826193}
-  gameLength: 10
   targetMover: {fileID: 1598826194}
-  targetZoneObject: {fileID: 0}
+  targetZoneObject: {fileID: 1598826192}
+  gameLength: 10
 --- !u!4 &246050580
 Transform:
   m_ObjectHideFlags: 0
@@ -10699,7 +10699,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TargetZoneMover
   gameManager: {fileID: 246050579}
   track: {fileID: 236928292}
-  moveSpeed: 4
+  moveSpeed: 10
   minWait: 0.5
   maxWait: 1.5
 --- !u!114 &1598826195

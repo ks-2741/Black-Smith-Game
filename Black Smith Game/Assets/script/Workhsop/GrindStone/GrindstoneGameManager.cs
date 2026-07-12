@@ -27,6 +27,9 @@ public class GrindstoneGameManager : MonoBehaviour
     [Header("Game Settings")]
     public float gameLength = 10f;
 
+    [Header("Camera")]
+    public CameraSwitcher cameraSwitcher;
+
 
     private bool active;
 
@@ -94,6 +97,12 @@ public class GrindstoneGameManager : MonoBehaviour
 
 
         HideStartButton();
+
+        if (stationButtons != null)
+            stationButtons.SetActive(false);
+
+        if (cameraSwitcher != null)
+            cameraSwitcher.SetMinigameActive(true);
 
 
         if (finishCanvas != null)
@@ -220,6 +229,9 @@ public class GrindstoneGameManager : MonoBehaviour
 
         HideStartButton();
 
+        if (stationButtons != null)
+            stationButtons.SetActive(false);
+
 
 
         if (targetMover != null)
@@ -272,6 +284,9 @@ public class GrindstoneGameManager : MonoBehaviour
         if (resultText != null)
             resultText.text = result;
 
+        if (cameraSwitcher != null)
+            cameraSwitcher.SetMinigameActive(true);
+
 
 
         Debug.Log("Result: " + result);
@@ -310,6 +325,9 @@ public class GrindstoneGameManager : MonoBehaviour
 
         if (resultText != null)
             resultText.text = "";
+
+        if (cameraSwitcher != null)
+            cameraSwitcher.SetMinigameActive(false);
     }
 
 
@@ -367,6 +385,9 @@ public class GrindstoneGameManager : MonoBehaviour
 
         if (stationButtons != null)
             stationButtons.SetActive(true);
+
+        if (cameraSwitcher != null)
+            cameraSwitcher.SetMinigameActive(false);
 
 
 

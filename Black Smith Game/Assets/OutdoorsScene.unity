@@ -1493,7 +1493,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GrindstoneGameManager
   startButton: {fileID: 1952846469}
-  stationButtons: {fileID: 974549708}
+  stationButtons: {fileID: 2016580401}
   gameplayUI: {fileID: 79863945}
   finishCanvas: {fileID: 805386187}
   timerText: {fileID: 1934850678}
@@ -1503,6 +1503,7 @@ MonoBehaviour:
   targetMover: {fileID: 1598826194}
   targetZoneObject: {fileID: 1598826192}
   gameLength: 10
+  cameraSwitcher: {fileID: 564631266}
 --- !u!4 &246050580
 Transform:
   m_ObjectHideFlags: 0
@@ -3993,6 +3994,7 @@ MonoBehaviour:
   - {fileID: 1942426936}
   - {fileID: 1832263494}
   - {fileID: 1304436705}
+  cameraButtonsUI: {fileID: 564631265}
   switchDelay: 0.5
   switchCooldown: 0
   forgingGameManager: {fileID: 735762108}
@@ -10699,7 +10701,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TargetZoneMover
   gameManager: {fileID: 246050579}
   track: {fileID: 236928292}
-  moveSpeed: 10
+  moveSpeed: 4
   minWait: 0.5
   maxWait: 1.5
 --- !u!114 &1598826195

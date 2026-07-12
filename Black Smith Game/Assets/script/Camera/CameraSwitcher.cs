@@ -7,6 +7,7 @@ public class CameraSwitcher : MonoBehaviour
 {
     public static CameraSwitcher Instance;
 
+
     public enum CameraView
     {
         Forge,
@@ -16,18 +17,24 @@ public class CameraSwitcher : MonoBehaviour
         Workbench
     }
 
+
     [Header("Cinemachine Cameras")]
     public CinemachineCamera[] cameras;
+
 
     [Header("Camera Buttons")]
     public Button[] cameraButtons;
 
+
+    [Header("Camera UI")]
+    public GameObject cameraButtonsUI;
+
+
     [Header("Switch Timing")]
-    [Tooltip("Delay before the camera switches.")]
     public float switchDelay = 0.5f;
 
-    [Tooltip("Delay after arriving before another switch is allowed.")]
     public float switchCooldown = 1f;
+
 
 
     [Header("Forging")]
@@ -37,21 +44,29 @@ public class CameraSwitcher : MonoBehaviour
     [Header("Smelting")]
     public SmeltingGameManager smeltingGameManager;
 
+
     [Header("Grindstone")]
     public GrindstoneGameManager grindstoneGameManager;
 
 
+
     public int CurrentCamera { get; private set; }
+
     public CameraView CurrentView { get; private set; }
 
 
+
     private bool isSwitching;
+
+    private bool minigameActive;
+
 
 
     private void Awake()
     {
         Instance = this;
     }
+
 
 
     private void Start()
@@ -62,6 +77,7 @@ public class CameraSwitcher : MonoBehaviour
 
         SwitchToCamera(0);
     }
+
 
 
     public void SwitchToCamera(int cameraIndex)
@@ -98,18 +114,21 @@ public class CameraSwitcher : MonoBehaviour
         }
 
 
+
         yield return new WaitForSeconds(switchDelay);
 
 
 
         CurrentCamera = cameraIndex;
+
         CurrentView = (CameraView)cameraIndex;
 
 
 
         for (int i = 0; i < cameras.Length; i++)
         {
-            cameras[i].Priority = (i == cameraIndex) ? 10 : 0;
+            cameras[i].Priority =
+                (i == cameraIndex) ? 10 : 0;
         }
 
 
@@ -119,15 +138,13 @@ public class CameraSwitcher : MonoBehaviour
 
 
         // =========================
-        // FORGING STATION
+        // FORGING
         // =========================
 
         if (forgingGameManager != null)
         {
             if (CurrentView == CameraView.Anvil)
             {
-                Debug.Log("Entered Anvil view.");
-
                 forgingGameManager.ShowStartButton();
             }
             else
@@ -139,15 +156,13 @@ public class CameraSwitcher : MonoBehaviour
 
 
         // =========================
-        // SMELTING STATION
+        // SMELTING
         // =========================
 
         if (smeltingGameManager != null)
         {
             if (CurrentView == CameraView.Furnace)
             {
-                Debug.Log("Entered Furnace view.");
-
                 smeltingGameManager.ShowStartButton();
             }
             else
@@ -156,8 +171,10 @@ public class CameraSwitcher : MonoBehaviour
             }
         }
 
+
+
         // =========================
-        // GRINDSTONE STATION
+        // GRINDSTONE
         // =========================
 
         if (grindstoneGameManager != null)
@@ -180,17 +197,41 @@ public class CameraSwitcher : MonoBehaviour
 
 
 
-        for (int i = 0; i < cameraButtons.Length; i++)
+        if (!minigameActive)
         {
-            if (cameraButtons[i] != null)
+            for (int i = 0; i < cameraButtons.Length; i++)
             {
-                cameraButtons[i].interactable = (i != cameraIndex);
+                if (cameraButtons[i] != null)
+                {
+                    cameraButtons[i].interactable =
+                        (i != cameraIndex);
+                }
             }
         }
 
 
         isSwitching = false;
     }
+
+
+
+
+    public void SetMinigameActive(bool state)
+    {
+        minigameActive = state;
+
+
+        if (cameraButtonsUI != null)
+            cameraButtonsUI.SetActive(!state);
+
+
+        foreach (Button button in cameraButtons)
+        {
+            if (button != null)
+                button.interactable = !state;
+        }
+    }
+
 
 
 

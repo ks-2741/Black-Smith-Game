@@ -31,6 +31,11 @@ public class ForgingGameManager : MonoBehaviour
     public TMP_Text qualityText;
     public TMP_Text sellValueText;
 
+    [Header("Inventory / Crafting")]
+    public ItemData ingotItem;      // item consumed to start forging (output of smelting)
+    public ItemData roughBladeItem; // item produced when forging finishes
+    public TMP_Text notEnoughMaterialsText; // optional, shows a message if no ingot
+
     public bool IsForgingActive { get; private set; }
 
 
@@ -60,6 +65,9 @@ public class ForgingGameManager : MonoBehaviour
 
         timerText.gameObject.SetActive(false);
         resultText.gameObject.SetActive(false);
+
+        if (notEnoughMaterialsText != null)
+            notEnoughMaterialsText.gameObject.SetActive(false);
     }
 
     public void ShowStartButton()
@@ -77,6 +85,25 @@ public class ForgingGameManager : MonoBehaviour
     public void StartForging()
     {
         Debug.Log("===== FORGING STARTED =====");
+
+        // Require an ingot before allowing the minigame to start
+        if (ingotItem != null)
+        {
+            if (InventoryManager.Instance == null || !InventoryManager.Instance.HasItem(ingotItem, 1))
+            {
+                Debug.Log("Not enough ingots to forge.");
+
+                if (notEnoughMaterialsText != null)
+                    ShowNotEnoughMaterials("Need " + ingotItem.itemName + " to forge!");
+
+                return; // block starting the minigame
+            }
+
+            InventoryManager.Instance.RemoveItem(ingotItem, 1);
+        }
+
+        if (notEnoughMaterialsText != null)
+            notEnoughMaterialsText.gameObject.SetActive(false);
 
         IsForgingActive = true;
 
@@ -97,7 +124,7 @@ public class ForgingGameManager : MonoBehaviour
         timerText.gameObject.SetActive(true);
         resultText.gameObject.SetActive(false);
 
-        
+
 
         gameLoop = StartCoroutine(GameLoop());
     }
@@ -230,5 +257,35 @@ public class ForgingGameManager : MonoBehaviour
         int sellValue = Mathf.RoundToInt(120 * percent);
 
         sellValueText.text = "£" + sellValue;
+
+        // Give the player a rough (forged) blade as long as forging didn't totally fail.
+        if (roughBladeItem != null && percent > 0f && InventoryManager.Instance != null)
+        {
+            InventoryManager.Instance.AddItem(roughBladeItem, 1);
+            Debug.Log("Added 1x " + roughBladeItem.itemName + " to inventory");
+        }
+    }
+
+    private Coroutine notEnoughMaterialsRoutine;
+
+    void ShowNotEnoughMaterials(string message)
+    {
+        if (notEnoughMaterialsText == null)
+            return;
+
+        if (notEnoughMaterialsRoutine != null)
+            StopCoroutine(notEnoughMaterialsRoutine);
+
+        notEnoughMaterialsRoutine = StartCoroutine(NotEnoughMaterialsRoutine(message));
+    }
+
+    IEnumerator NotEnoughMaterialsRoutine(string message)
+    {
+        notEnoughMaterialsText.text = message;
+        notEnoughMaterialsText.gameObject.SetActive(true);
+
+        yield return new WaitForSeconds(2f);
+
+        notEnoughMaterialsText.gameObject.SetActive(false);
     }
 }

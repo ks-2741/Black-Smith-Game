@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: eabfcb9226b20ca41924f90c8567f7dd, type: 3}
-  m_Name: New Item
+  m_Name: blade
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  itemName: iron ore
-  icon: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  basePrice: 1
+  itemName: blade
+  icon: {fileID: 0}
+  basePrice: 0
   isCraftingMaterial: 0

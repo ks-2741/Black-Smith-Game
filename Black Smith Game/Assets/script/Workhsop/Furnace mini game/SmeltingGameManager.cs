@@ -22,6 +22,11 @@ public class SmeltingGameManager : MonoBehaviour
     [Header("Temperature")]
     public TemperatureController temperatureController;
 
+    [Header("Inventory / Crafting")]
+    public ItemData oreItem;      // item consumed to start smelting
+    public ItemData ingotItem;    // item produced when smelting finishes
+    public TMP_Text notEnoughMaterialsText; // optional, shows a message if no ore
+
     private bool active;
     private Coroutine smeltingRoutine;
 
@@ -40,6 +45,9 @@ public class SmeltingGameManager : MonoBehaviour
 
         if (timerText != null)
             timerText.gameObject.SetActive(false);
+
+        if (notEnoughMaterialsText != null)
+            notEnoughMaterialsText.gameObject.SetActive(false);
     }
 
     public void ShowStartButton()
@@ -57,6 +65,25 @@ public class SmeltingGameManager : MonoBehaviour
     public void StartSmelting()
     {
         Debug.Log("===== SMELTING STARTED =====");
+
+        // Require ore before allowing the minigame to start
+        if (oreItem != null)
+        {
+            if (InventoryManager.Instance == null || !InventoryManager.Instance.HasItem(oreItem, 1))
+            {
+                Debug.Log("Not enough ore to smelt.");
+
+                if (notEnoughMaterialsText != null)
+                    ShowNotEnoughMaterials("Need " + oreItem.itemName + " to smelt!");
+
+                return; // block starting the minigame
+            }
+
+            InventoryManager.Instance.RemoveItem(oreItem, 1);
+        }
+
+        if (notEnoughMaterialsText != null)
+            notEnoughMaterialsText.gameObject.SetActive(false);
 
         active = true;
 
@@ -158,6 +185,14 @@ public class SmeltingGameManager : MonoBehaviour
         if (valueText != null)
             valueText.text = "£" + value;
 
+        // Give the player an ingot as long as the smelt didn't totally fail.
+        // Adjust the threshold below if you want "Failed" smelts to produce nothing.
+        if (ingotItem != null && quality > 0f)
+        {
+            InventoryManager.Instance.AddItem(ingotItem, 1);
+            Debug.Log("Added 1x " + ingotItem.itemName + " to inventory");
+        }
+
         Debug.Log("Result: " + result);
         Debug.Log("Quality: " + quality);
     }
@@ -217,5 +252,28 @@ public class SmeltingGameManager : MonoBehaviour
     public bool IsSmeltingActive()
     {
         return active;
+    }
+
+    private Coroutine notEnoughMaterialsRoutine;
+
+    void ShowNotEnoughMaterials(string message)
+    {
+        if (notEnoughMaterialsText == null)
+            return;
+
+        if (notEnoughMaterialsRoutine != null)
+            StopCoroutine(notEnoughMaterialsRoutine);
+
+        notEnoughMaterialsRoutine = StartCoroutine(NotEnoughMaterialsRoutine(message));
+    }
+
+    IEnumerator NotEnoughMaterialsRoutine(string message)
+    {
+        notEnoughMaterialsText.text = message;
+        notEnoughMaterialsText.gameObject.SetActive(true);
+
+        yield return new WaitForSeconds(2f);
+
+        notEnoughMaterialsText.gameObject.SetActive(false);
     }
 }

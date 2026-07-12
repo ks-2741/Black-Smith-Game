@@ -31,6 +31,11 @@ public class GrindstoneGameManager : MonoBehaviour
     [Header("Camera")]
     public CameraSwitcher cameraSwitcher;
 
+    [Header("Inventory / Crafting")]
+    public ItemData roughBladeItem;    // item consumed to start grinding (output of forging)
+    public ItemData finishedBladeItem; // item produced when grinding finishes
+    public TMP_Text notEnoughMaterialsText; // optional, shows a message if no rough blade
+
 
     private bool active;
 
@@ -65,6 +70,9 @@ public class GrindstoneGameManager : MonoBehaviour
 
         if (resultText != null)
             resultText.text = "";
+
+        if (notEnoughMaterialsText != null)
+            notEnoughMaterialsText.gameObject.SetActive(false);
     }
 
 
@@ -90,6 +98,25 @@ public class GrindstoneGameManager : MonoBehaviour
     public void StartGrinding()
     {
         Debug.Log("===== GRINDING STARTED =====");
+
+        // Require a rough (forged) blade before allowing the minigame to start
+        if (roughBladeItem != null)
+        {
+            if (InventoryManager.Instance == null || !InventoryManager.Instance.HasItem(roughBladeItem, 1))
+            {
+                Debug.Log("Not enough materials to grind.");
+
+                if (notEnoughMaterialsText != null)
+                    ShowNotEnoughMaterials("Need " + roughBladeItem.itemName + " to grind!");
+
+                return; // block starting the minigame
+            }
+
+            InventoryManager.Instance.RemoveItem(roughBladeItem, 1);
+        }
+
+        if (notEnoughMaterialsText != null)
+            notEnoughMaterialsText.gameObject.SetActive(false);
 
 
         active = true;
@@ -290,6 +317,13 @@ public class GrindstoneGameManager : MonoBehaviour
         if (valueText != null)
             valueText.text = "£" + value;
 
+        // Give the player a finished blade as long as grinding didn't totally fail.
+        if (finishedBladeItem != null && quality > 0f && InventoryManager.Instance != null)
+        {
+            InventoryManager.Instance.AddItem(finishedBladeItem, 1);
+            Debug.Log("Added 1x " + finishedBladeItem.itemName + " to inventory");
+        }
+
         if (cameraSwitcher != null)
             cameraSwitcher.SetMinigameActive(true);
 
@@ -413,5 +447,28 @@ public class GrindstoneGameManager : MonoBehaviour
     public bool IsGrindingActive()
     {
         return active;
+    }
+
+    private Coroutine notEnoughMaterialsRoutine;
+
+    void ShowNotEnoughMaterials(string message)
+    {
+        if (notEnoughMaterialsText == null)
+            return;
+
+        if (notEnoughMaterialsRoutine != null)
+            StopCoroutine(notEnoughMaterialsRoutine);
+
+        notEnoughMaterialsRoutine = StartCoroutine(NotEnoughMaterialsRoutine(message));
+    }
+
+    IEnumerator NotEnoughMaterialsRoutine(string message)
+    {
+        notEnoughMaterialsText.text = message;
+        notEnoughMaterialsText.gameObject.SetActive(true);
+
+        yield return new WaitForSeconds(2f);
+
+        notEnoughMaterialsText.gameObject.SetActive(false);
     }
 }

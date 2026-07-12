@@ -12,6 +12,7 @@ public class GrindstoneGameManager : MonoBehaviour
 
     public TMP_Text timerText;
     public TMP_Text resultText;
+    public TMP_Text valueText;
 
 
     [Header("References")]
@@ -284,6 +285,11 @@ public class GrindstoneGameManager : MonoBehaviour
         if (resultText != null)
             resultText.text = result;
 
+        int value = Mathf.RoundToInt(quality * 100);
+
+        if (valueText != null)
+            valueText.text = "£" + value;
+
         if (cameraSwitcher != null)
             cameraSwitcher.SetMinigameActive(true);
 
@@ -291,6 +297,7 @@ public class GrindstoneGameManager : MonoBehaviour
 
         Debug.Log("Result: " + result);
         Debug.Log("Quality: " + quality);
+        Debug.Log("Value: " + value);
     }
 
 
@@ -325,6 +332,9 @@ public class GrindstoneGameManager : MonoBehaviour
 
         if (resultText != null)
             resultText.text = "";
+
+        if (valueText != null)
+            valueText.text = "";
 
         if (cameraSwitcher != null)
             cameraSwitcher.SetMinigameActive(false);
@@ -380,6 +390,9 @@ public class GrindstoneGameManager : MonoBehaviour
 
         if (resultText != null)
             resultText.text = "";
+
+        if (valueText != null)
+            valueText.text = "";
 
 
 

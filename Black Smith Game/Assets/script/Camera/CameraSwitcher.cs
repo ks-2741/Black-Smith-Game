@@ -37,6 +37,9 @@ public class CameraSwitcher : MonoBehaviour
     [Header("Smelting")]
     public SmeltingGameManager smeltingGameManager;
 
+    [Header("Grindstone")]
+    public GrindstoneGameManager grindstoneGameManager;
+
 
     public int CurrentCamera { get; private set; }
     public CameraView CurrentView { get; private set; }
@@ -150,6 +153,24 @@ public class CameraSwitcher : MonoBehaviour
             else
             {
                 smeltingGameManager.HideStartButton();
+            }
+        }
+
+        // =========================
+        // GRINDSTONE STATION
+        // =========================
+
+        if (grindstoneGameManager != null)
+        {
+            if (CurrentView == CameraView.Grindstone)
+            {
+                Debug.Log("Entered Grindstone view.");
+
+                grindstoneGameManager.ShowStartButton();
+            }
+            else
+            {
+                grindstoneGameManager.HideStartButton();
             }
         }
 

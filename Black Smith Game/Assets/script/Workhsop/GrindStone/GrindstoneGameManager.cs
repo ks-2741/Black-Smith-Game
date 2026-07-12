@@ -1,95 +1,254 @@
+using System.Collections;
 using UnityEngine;
 using TMPro;
 
 public class GrindstoneGameManager : MonoBehaviour
 {
-    public GameObject gameUI;
-    public GameObject finishUI;
+    [Header("UI")]
+    public GameObject startButton;
+    public GameObject stationButtons;
+    public GameObject gameplayUI;
+    public GameObject finishCanvas;
 
     public TMP_Text timerText;
     public TMP_Text resultText;
 
+    [Header("References")]
     public RectTransform blade;
-    public RectTransform movingLine;
+    public RectTransform targetZone;
 
+    [Header("Game Settings")]
     public float gameLength = 10f;
 
-    float timer;
-    float score;
+    [Header("Target")]
+    public TargetZoneMover targetMover;
+    public GameObject targetZoneObject;
 
-    bool playing;
+    private bool active;
+    private Coroutine gameRoutine;
+
+    private float score;
 
     void Start()
     {
-        finishUI.SetActive(false);
-        timerText.text = "";
+        Debug.Log("GrindstoneGameManager Loaded");
+
+        if (gameplayUI != null)
+            gameplayUI.SetActive(false);
+
+        if (finishCanvas != null)
+            finishCanvas.SetActive(false);
+
+        if (startButton != null)
+            startButton.SetActive(false);
+
+        if (timerText != null)
+        {
+            timerText.text = "";
+            timerText.gameObject.SetActive(false);
+        }
+
+        if (resultText != null)
+            resultText.text = "";
     }
 
-    public void StartGame()
+    public void ShowStartButton()
     {
-        timer = gameLength;
-        score = 0;
-
-        playing = true;
-
-        timerText.gameObject.SetActive(true);
+        if (startButton != null)
+            startButton.SetActive(true);
+        Debug.Log("ShowStartButton called");
     }
 
-    void Update()
+    public void HideStartButton()
     {
-        if (!playing)
+        if (startButton != null)
+            startButton.SetActive(false);
+    }
+
+    public void StartGrinding()
+    {
+        Debug.Log("===== GRINDING STARTED =====");
+
+        active = true;
+        score = 0f;
+
+        HideStartButton();
+
+        if (targetZoneObject != null)
+            targetZoneObject.SetActive(true);
+
+        if (targetMover != null)
+            targetMover.StartMoving();
+
+        if (finishCanvas != null)
+            finishCanvas.SetActive(false);
+
+        if (gameplayUI != null)
+            gameplayUI.SetActive(true);
+
+        if (timerText != null)
+        {
+            timerText.text = "";
+            timerText.gameObject.SetActive(true);
+        }
+
+        if (resultText != null)
+            resultText.text = "";
+
+        if (gameRoutine != null)
+            StopCoroutine(gameRoutine);
+
+        gameRoutine = StartCoroutine(GrindingTimer());
+    }
+
+    IEnumerator GrindingTimer()
+    {
+        float timer = gameLength;
+
+        while (timer > 0)
+        {
+            timer -= Time.deltaTime;
+
+            if (timerText != null)
+                timerText.text = timer.ToString("0");
+
+            CheckScore();
+
+            yield return null;
+        }
+
+        FinishGrinding();
+    }
+
+    void CheckScore()
+    {
+        if (blade == null || targetZone == null)
             return;
 
-        timer -= Time.deltaTime;
-
-        timerText.text = timer.ToString("0.0");
-
-        CheckAccuracy();
-
-        if (timer <= 0)
-            FinishGame();
-    }
-
-    void CheckAccuracy()
-    {
         float distance =
-            Mathf.Abs(blade.anchoredPosition.x -
-                      movingLine.anchoredPosition.x);
+            Mathf.Abs(blade.anchoredPosition.x - targetZone.anchoredPosition.x);
 
-        if (distance < 40)
+        float allowed =
+            targetZone.rect.width / 2f;
+
+        if (distance <= allowed)
             score += Time.deltaTime;
         else
-            score -= Time.deltaTime;
+            score -= Time.deltaTime * 0.5f;
 
-        score = Mathf.Clamp(score, 0, gameLength);
+        score = Mathf.Clamp(score, 0f, gameLength);
     }
 
-    void FinishGame()
+    void FinishGrinding()
     {
-        playing = false;
+        Debug.Log("===== GRINDING FINISHED =====");
 
-        timerText.gameObject.SetActive(false);
+        active = false;
 
-        gameUI.SetActive(false);
-        finishUI.SetActive(true);
+        HideStartButton();
+        if (targetMover != null)
+            targetMover.StopMoving();
 
-        float percent = score / gameLength;
+        if (targetZoneObject != null)
+            targetZoneObject.SetActive(false);
 
-        if (percent > .9f)
-            resultText.text = "Perfect";
-        else if (percent > .7f)
-            resultText.text = "Good";
-        else if (percent > .5f)
-            resultText.text = "OK";
-        else if (percent > .3f)
-            resultText.text = "Bad";
+        if (stationButtons != null)
+            stationButtons.SetActive(false);
+
+        if (timerText != null)
+        {
+            timerText.text = "";
+            timerText.gameObject.SetActive(false);
+        }
+
+        if (finishCanvas != null)
+            finishCanvas.SetActive(true);
+
+        float quality = score / gameLength;
+
+        string result;
+
+        if (quality >= 0.9f)
+            result = "Perfect";
+        else if (quality >= 0.7f)
+            result = "Good";
+        else if (quality >= 0.5f)
+            result = "OK";
+        else if (quality >= 0.3f)
+            result = "Bad";
         else
-            resultText.text = "Poor";
+            result = "Poor";
+
+        if (resultText != null)
+            resultText.text = result;
+
+        Debug.Log("Result: " + result);
+        Debug.Log("Quality: " + quality);
     }
 
-    public void ContinueGame()
+    public void ContinueGrinding()
     {
-        finishUI.SetActive(false);
-        gameUI.SetActive(true);
+        Debug.Log("Continue pressed");
+
+        if (finishCanvas != null)
+            finishCanvas.SetActive(false);
+
+        if (stationButtons != null)
+            stationButtons.SetActive(true);
+
+        ShowStartButton();
+
+        if (timerText != null)
+        {
+            timerText.text = "";
+            timerText.gameObject.SetActive(false);
+        }
+
+        if (resultText != null)
+            resultText.text = "";
+    }
+
+    public void ExitGrinding()
+    {
+        Debug.Log("Exited Grinding");
+
+        active = false;
+
+        if (targetMover != null)
+            targetMover.StopMoving();
+
+        if (targetZoneObject != null)
+            targetZoneObject.SetActive(false);
+
+        if (gameRoutine != null)
+        {
+            StopCoroutine(gameRoutine);
+            gameRoutine = null;
+        }
+
+        if (gameplayUI != null)
+            gameplayUI.SetActive(false);
+
+        if (finishCanvas != null)
+            finishCanvas.SetActive(false);
+
+        if (timerText != null)
+        {
+            timerText.text = "";
+            timerText.gameObject.SetActive(false);
+        }
+
+        if (resultText != null)
+            resultText.text = "";
+
+        if (stationButtons != null)
+            stationButtons.SetActive(true);
+
+        ShowStartButton();
+    }
+
+    public bool IsGrindingActive()
+    {
+        return active;
     }
 }

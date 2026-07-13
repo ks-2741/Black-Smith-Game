@@ -45,6 +45,12 @@ public class InventoryManager : MonoBehaviour
         return slot != null && slot.quantity >= amount;
     }
 
+    public int GetQuantity(ItemData item)
+    {
+        InventorySlot slot = slots.Find(s => s.item == item);
+        return slot != null ? slot.quantity : 0;
+    }
+
     public bool RemoveItem(ItemData item, int amount = 1)
     {
         InventorySlot slot = slots.Find(s => s.item == item);

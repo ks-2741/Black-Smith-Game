@@ -80,6 +80,9 @@ public class SmeltingGameManager : MonoBehaviour
             }
 
             InventoryManager.Instance.RemoveItem(oreItem, 1);
+
+            if (OrePileManager.Instance != null)
+                OrePileManager.Instance.RemoveOre();
         }
 
         if (notEnoughMaterialsText != null)

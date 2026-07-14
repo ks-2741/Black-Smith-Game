@@ -6,7 +6,10 @@ public class DevCheats : MonoBehaviour
     [Header("Dev Cheat Items")]
     public ItemData ingotItem;
     public ItemData bladeItem;   // rough blade (pre-grind)
-    public ItemData swordItem;   // finished sword
+    public ItemData swordItem;
+    public ItemData crossGuard;
+    public ItemData Hilt;// finished sword
+
 
     [Header("Settings")]
     public bool enableCheats = true; // easy master switch to disable before shipping
@@ -27,6 +30,12 @@ public class DevCheats : MonoBehaviour
 
         if (Keyboard.current.pKey.wasPressedThisFrame)
             GiveItem(swordItem);
+        
+        if (Keyboard.current.yKey.wasPressedThisFrame)
+            GiveItem(Hilt);
+        
+        if (Keyboard.current.uKey.wasPressedThisFrame)
+            GiveItem(crossGuard);
     }
 
     void GiveItem(ItemData item)

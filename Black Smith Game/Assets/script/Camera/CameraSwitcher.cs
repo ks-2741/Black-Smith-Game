@@ -14,7 +14,8 @@ public class CameraSwitcher : MonoBehaviour
         Anvil,
         Furnace,
         Grindstone,
-        Workbench
+        Workbench,
+        SwordAssembly
     }
 
 
@@ -36,18 +37,16 @@ public class CameraSwitcher : MonoBehaviour
     public float switchCooldown = 1f;
 
 
+    [System.Serializable]
+    public class StationBinding
+    {
+        public CameraView view;
+        public MonoBehaviour managerBehaviour; // drag any station manager here - it must implement IStationGameManager
+        [System.NonSerialized] public IStationGameManager manager;
+    }
 
-    [Header("Forging")]
-    public ForgingGameManager forgingGameManager;
-
-
-    [Header("Smelting")]
-    public SmeltingGameManager smeltingGameManager;
-
-
-    [Header("Grindstone")]
-    public GrindstoneGameManager grindstoneGameManager;
-
+    [Header("Stations")]
+    public StationBinding[] stations;
 
 
     public int CurrentCamera { get; private set; }
@@ -65,6 +64,17 @@ public class CameraSwitcher : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+
+        foreach (StationBinding binding in stations)
+        {
+            binding.manager = binding.managerBehaviour as IStationGameManager;
+
+            if (binding.manager == null && binding.managerBehaviour != null)
+            {
+                Debug.LogWarning("CameraSwitcher: " + binding.managerBehaviour.name +
+                    " does not implement IStationGameManager.");
+            }
+        }
     }
 
 
@@ -138,57 +148,18 @@ public class CameraSwitcher : MonoBehaviour
 
 
         // =========================
-        // FORGING
+        // STATIONS (generic loop - no need to edit this per station)
         // =========================
 
-        if (forgingGameManager != null)
+        foreach (StationBinding binding in stations)
         {
-            if (CurrentView == CameraView.Anvil)
-            {
-                forgingGameManager.ShowStartButton();
-            }
+            if (binding.manager == null)
+                continue;
+
+            if (CurrentView == binding.view)
+                binding.manager.ShowStartButton();
             else
-            {
-                forgingGameManager.HideStartButton();
-            }
-        }
-
-
-
-        // =========================
-        // SMELTING
-        // =========================
-
-        if (smeltingGameManager != null)
-        {
-            if (CurrentView == CameraView.Furnace)
-            {
-                smeltingGameManager.ShowStartButton();
-            }
-            else
-            {
-                smeltingGameManager.HideStartButton();
-            }
-        }
-
-
-
-        // =========================
-        // GRINDSTONE
-        // =========================
-
-        if (grindstoneGameManager != null)
-        {
-            if (CurrentView == CameraView.Grindstone)
-            {
-                Debug.Log("Entered Grindstone view.");
-
-                grindstoneGameManager.ShowStartButton();
-            }
-            else
-            {
-                grindstoneGameManager.HideStartButton();
-            }
+                binding.manager.HideStartButton();
         }
 
 

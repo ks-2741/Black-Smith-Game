@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using TMPro;
 
-public class ForgingGameManager : MonoBehaviour
+public class ForgingGameManager : MonoBehaviour, IStationGameManager
 {
     [Header("UI")]
     public GameObject startButton;

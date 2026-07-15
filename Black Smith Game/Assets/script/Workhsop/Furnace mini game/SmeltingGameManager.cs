@@ -1,8 +1,9 @@
 using System.Collections;
+using System.Collections;
 using UnityEngine;
 using TMPro;
 
-public class SmeltingGameManager : MonoBehaviour
+public class SmeltingGameManager : MonoBehaviour, IStationGameManager
 {
     [Header("UI")]
     public GameObject startButton;

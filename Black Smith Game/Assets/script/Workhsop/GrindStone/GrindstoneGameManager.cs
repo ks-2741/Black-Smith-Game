@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using TMPro;
 
-public class GrindstoneGameManager : MonoBehaviour
+public class GrindstoneGameManager : MonoBehaviour, IStationGameManager
 {
     [Header("UI")]
     public GameObject startButton;
@@ -32,14 +32,24 @@ public class GrindstoneGameManager : MonoBehaviour
     public CameraSwitcher cameraSwitcher;
 
     [Header("Inventory / Crafting")]
-    public ItemData roughBladeItem;    // item consumed to start grinding (output of forging)
-    public ItemData finishedBladeItem; // item produced when grinding finishes
-    public TMP_Text notEnoughMaterialsText; // optional, shows a message if no rough blade
+    [Tooltip("The unassembled, unsharpened blade (output of the Anvil).")]
+    public ItemData roughBladeItem;
+    [Tooltip("The unassembled, sharpened blade (used later at the Sword Assembler).")]
+    public ItemData sharpBladeItem;
+    [Tooltip("A fully assembled sword that hasn't been sharpened yet (output of the Sword Assembler when built with a rough blade).")]
+    public ItemData unsharpSwordItem;
+    [Tooltip("The final, finished, sharpened sword.")]
+    public ItemData sharpSwordItem;
+    public TMP_Text notEnoughMaterialsText; // optional, shows a message if there's nothing to grind
 
+
+    private enum GrindMode { None, Blade, Sword }
+    private GrindMode currentGrindMode = GrindMode.None;
 
     private bool active;
 
     private Coroutine gameRoutine;
+    private Coroutine notEnoughMaterialsRoutine;
 
     private float score;
 
@@ -99,20 +109,27 @@ public class GrindstoneGameManager : MonoBehaviour
     {
         Debug.Log("===== GRINDING STARTED =====");
 
-        // Require a rough (forged) blade before allowing the minigame to start
-        if (roughBladeItem != null)
+        currentGrindMode = GrindMode.None;
+
+        // Decide what we're sharpening: a loose blade, or an already-assembled sword.
+        // Whichever the player currently has gets consumed.
+        if (roughBladeItem != null && InventoryManager.Instance != null &&
+            InventoryManager.Instance.HasItem(roughBladeItem, 1))
         {
-            if (InventoryManager.Instance == null || !InventoryManager.Instance.HasItem(roughBladeItem, 1))
-            {
-                Debug.Log("Not enough materials to grind.");
-
-                if (notEnoughMaterialsText != null)
-                    ShowNotEnoughMaterials("Need " + roughBladeItem.itemName + " to grind!");
-
-                return; // block starting the minigame
-            }
-
             InventoryManager.Instance.RemoveItem(roughBladeItem, 1);
+            currentGrindMode = GrindMode.Blade;
+        }
+        else if (unsharpSwordItem != null && InventoryManager.Instance != null &&
+            InventoryManager.Instance.HasItem(unsharpSwordItem, 1))
+        {
+            InventoryManager.Instance.RemoveItem(unsharpSwordItem, 1);
+            currentGrindMode = GrindMode.Sword;
+        }
+        else
+        {
+            Debug.Log("Nothing to grind - no blade or unsharpened sword.");
+            ShowNotEnoughMaterials("Need a Blade or an unsharpened Sword to grind!");
+            return; // block starting the minigame
         }
 
         if (notEnoughMaterialsText != null)
@@ -317,11 +334,19 @@ public class GrindstoneGameManager : MonoBehaviour
         if (valueText != null)
             valueText.text = "£" + value;
 
-        // Give the player a finished blade as long as grinding didn't totally fail.
-        if (finishedBladeItem != null && quality > 0f && InventoryManager.Instance != null)
+        // Produce the correct output depending on what we sharpened.
+        if (quality > 0f && InventoryManager.Instance != null)
         {
-            InventoryManager.Instance.AddItem(finishedBladeItem, 1);
-            Debug.Log("Added 1x " + finishedBladeItem.itemName + " to inventory");
+            if (currentGrindMode == GrindMode.Blade && sharpBladeItem != null)
+            {
+                InventoryManager.Instance.AddItem(sharpBladeItem, 1);
+                Debug.Log("Added 1x " + sharpBladeItem.itemName + " to inventory");
+            }
+            else if (currentGrindMode == GrindMode.Sword && sharpSwordItem != null)
+            {
+                InventoryManager.Instance.AddItem(sharpSwordItem, 1);
+                Debug.Log("Added 1x " + sharpSwordItem.itemName + " to inventory");
+            }
         }
 
         if (cameraSwitcher != null)
@@ -448,8 +473,6 @@ public class GrindstoneGameManager : MonoBehaviour
     {
         return active;
     }
-
-    private Coroutine notEnoughMaterialsRoutine;
 
     void ShowNotEnoughMaterials(string message)
     {

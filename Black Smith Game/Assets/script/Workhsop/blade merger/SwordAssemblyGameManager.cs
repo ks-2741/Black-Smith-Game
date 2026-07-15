@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class SwordAssemblyGameManager : MonoBehaviour
+public class SwordAssemblyGameManager : MonoBehaviour, IStationGameManager
 {
     [Header("UI")]
     public GameObject startButton;
@@ -21,7 +21,7 @@ public class SwordAssemblyGameManager : MonoBehaviour
     public TMP_Text sellValueText;
 
     [Header("Grid")]
-    public Transform gridParent;   // parent holding all 36 MemoryCell buttons
+    public Transform gridParent;   // parent holding all the MemoryCell buttons
     private MemoryCell[] cells;
 
     [Header("Game Settings")]
@@ -37,11 +37,20 @@ public class SwordAssemblyGameManager : MonoBehaviour
     [Header("Inventory / Crafting")]
     public ItemData hiltItem;
     public ItemData crossguardItem;
-    public ItemData bladeItem;         // the finished blade from grinding
-    public ItemData finishedSwordItem; // the final assembled sword
+    [Tooltip("An unsharpened blade - if this is what gets used, the result is a dull sword that still needs the Grindstone.")]
+    public ItemData roughBladeItem;
+    [Tooltip("A sharpened blade - if this is what gets used, the result is the final finished sword.")]
+    public ItemData sharpBladeItem;
+    [Tooltip("Assembled sword, not yet sharpened (used if built with a rough blade).")]
+    public ItemData unsharpSwordItem;
+    [Tooltip("The final, finished, sharpened sword (used if built with a sharp blade).")]
+    public ItemData sharpSwordItem;
     public TMP_Text notEnoughMaterialsText;
 
     public bool IsAssemblyActive { get; private set; }
+
+    private enum BladeSource { None, Rough, Sharp }
+    private BladeSource currentBladeSource = BladeSource.None;
 
     private List<int> patternIndices = new List<int>();
     private int correctClicksNeeded;
@@ -112,26 +121,49 @@ public class SwordAssemblyGameManager : MonoBehaviour
     {
         Debug.Log("===== SWORD ASSEMBLY STARTED =====");
 
-        // Require hilt, crossguard, and blade before allowing the minigame to start
-        if (hiltItem != null && crossguardItem != null && bladeItem != null)
+        currentBladeSource = BladeSource.None;
+
+        bool hasHiltAndGuard =
+            InventoryManager.Instance != null &&
+            hiltItem != null && crossguardItem != null &&
+            InventoryManager.Instance.HasItem(hiltItem, 1) &&
+            InventoryManager.Instance.HasItem(crossguardItem, 1);
+
+        if (!hasHiltAndGuard)
         {
-            bool hasAll =
-                InventoryManager.Instance != null &&
-                InventoryManager.Instance.HasItem(hiltItem, 1) &&
-                InventoryManager.Instance.HasItem(crossguardItem, 1) &&
-                InventoryManager.Instance.HasItem(bladeItem, 1);
-
-            if (!hasAll)
-            {
-                Debug.Log("Not enough parts to assemble a sword.");
-                ShowNotEnoughMaterials("Need a Hilt, Crossguard, and Blade!");
-                return;
-            }
-
-            InventoryManager.Instance.RemoveItem(hiltItem, 1);
-            InventoryManager.Instance.RemoveItem(crossguardItem, 1);
-            InventoryManager.Instance.RemoveItem(bladeItem, 1);
+            Debug.Log("Not enough parts to assemble a sword - missing Hilt/Crossguard.");
+            ShowNotEnoughMaterials("Need a Hilt and Crossguard!");
+            return;
         }
+
+        // Prefer a sharp blade if the player has one (skips needing the grindstone afterwards),
+        // otherwise fall back to a rough blade (will need sharpening after assembly).
+        if (sharpBladeItem != null && InventoryManager.Instance.HasItem(sharpBladeItem, 1))
+        {
+            currentBladeSource = BladeSource.Sharp;
+        }
+        else if (roughBladeItem != null && InventoryManager.Instance.HasItem(roughBladeItem, 1))
+        {
+            currentBladeSource = BladeSource.Rough;
+        }
+        else
+        {
+            Debug.Log("Not enough parts to assemble a sword - missing a Blade.");
+            ShowNotEnoughMaterials("Need a Blade (sharp or unsharpened)!");
+            return;
+        }
+
+        // Consume the parts now that we know we can proceed.
+        InventoryManager.Instance.RemoveItem(hiltItem, 1);
+        InventoryManager.Instance.RemoveItem(crossguardItem, 1);
+
+        if (currentBladeSource == BladeSource.Sharp)
+            InventoryManager.Instance.RemoveItem(sharpBladeItem, 1);
+        else
+            InventoryManager.Instance.RemoveItem(roughBladeItem, 1);
+
+        if (notEnoughMaterialsText != null)
+            notEnoughMaterialsText.gameObject.SetActive(false);
 
         IsAssemblyActive = true;
 
@@ -302,8 +334,10 @@ public class SwordAssemblyGameManager : MonoBehaviour
 
         Debug.Log("Correct: " + correctClicks + "/" + correctClicksNeeded + " Rank: " + rank);
 
+        bool willBeSharp = currentBladeSource == BladeSource.Sharp;
+
         if (weaponNameText != null)
-            weaponNameText.text = "Iron Sword";
+            weaponNameText.text = willBeSharp ? "Iron Sword" : "Iron Sword (Unsharpened)";
 
         if (qualityText != null)
             qualityText.text = rank;
@@ -322,11 +356,19 @@ public class SwordAssemblyGameManager : MonoBehaviour
                 swordAnimator.SetTrigger(failTrigger);
         }
 
-        // Give the player a finished sword as long as assembly didn't totally fail.
-        if (finishedSwordItem != null && quality > 0f && InventoryManager.Instance != null)
+        // Produce the correct output depending on which blade was used.
+        if (quality > 0f && InventoryManager.Instance != null)
         {
-            InventoryManager.Instance.AddItem(finishedSwordItem, 1);
-            Debug.Log("Added 1x " + finishedSwordItem.itemName + " to inventory");
+            if (willBeSharp && sharpSwordItem != null)
+            {
+                InventoryManager.Instance.AddItem(sharpSwordItem, 1);
+                Debug.Log("Added 1x " + sharpSwordItem.itemName + " to inventory (finished)");
+            }
+            else if (!willBeSharp && unsharpSwordItem != null)
+            {
+                InventoryManager.Instance.AddItem(unsharpSwordItem, 1);
+                Debug.Log("Added 1x " + unsharpSwordItem.itemName + " to inventory (needs sharpening)");
+            }
         }
 
         if (stationButtons != null)

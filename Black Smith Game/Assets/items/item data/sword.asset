@@ -15,4 +15,5 @@ MonoBehaviour:
   itemName: iron sword
   icon: {fileID: 0}
   basePrice: 10
+  sellPrice: 20
   isCraftingMaterial: 0

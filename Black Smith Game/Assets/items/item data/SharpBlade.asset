@@ -15,4 +15,5 @@ MonoBehaviour:
   itemName: SharpBLade
   icon: {fileID: 0}
   basePrice: 10
+  sellPrice: 0
   isCraftingMaterial: 0

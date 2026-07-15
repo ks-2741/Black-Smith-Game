@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: iron ingot
   icon: {fileID: 0}
-  basePrice: 0
+  basePrice: 10
+  sellPrice: 0
   isCraftingMaterial: 0

@@ -129,6 +129,12 @@ public class CustomerManager : MonoBehaviour
 
         InventoryManager.Instance.RemoveItem(wanted, 1);
 
+        if (CurrencyManager.Instance != null)
+        {
+            CurrencyManager.Instance.AddGold(wanted.sellPrice);
+            Debug.Log("Customer paid £" + wanted.sellPrice + " for " + wanted.itemName);
+        }
+
         Debug.Log("Success! Gave " + wanted.itemName + " to customer.");
 
         if (giveButtonUI != null)

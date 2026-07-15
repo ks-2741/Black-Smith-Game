@@ -15,4 +15,5 @@ MonoBehaviour:
   itemName: SharpSword
   icon: {fileID: 0}
   basePrice: 20
+  sellPrice: 25
   isCraftingMaterial: 0

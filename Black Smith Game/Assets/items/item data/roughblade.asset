@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: rough blade
   icon: {fileID: 0}
-  basePrice: 3
+  basePrice: 0
+  sellPrice: 18
   isCraftingMaterial: 0

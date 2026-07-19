@@ -15,14 +15,61 @@ public class OrePileManager : MonoBehaviour
     public float dropForce = 1.5f;   // small random tumble force so they don't land in a perfect stack
 
     private List<GameObject> pile = new List<GameObject>();
+    private int lastKnownCount;
 
     void Awake()
     {
         Instance = this;
     }
 
-    // Call this once per ore purchased
-    public void AddOre()
+    void Start()
+    {
+        // Sync up with whatever ore already exists in the inventory when the scene loads
+        // (e.g. starting items, or a saved game) without spawning/removing anything -
+        // just make our internal count match reality.
+        lastKnownCount = InventoryManager.Instance != null && oreItem != null
+            ? InventoryManager.Instance.GetQuantity(oreItem)
+            : 0;
+    }
+
+    void OnEnable()
+    {
+        if (InventoryManager.Instance != null)
+            InventoryManager.Instance.OnInventoryChanged += HandleInventoryChanged;
+    }
+
+    void OnDisable()
+    {
+        if (InventoryManager.Instance != null)
+            InventoryManager.Instance.OnInventoryChanged -= HandleInventoryChanged;
+    }
+
+    // Automatically keeps the physical pile in sync with however much ore
+    // the player owns - no matter what caused the change (buying, a
+    // CraftingStation consuming it, dev cheats, etc).
+    void HandleInventoryChanged()
+    {
+        if (oreItem == null || InventoryManager.Instance == null)
+            return;
+
+        int currentCount = InventoryManager.Instance.GetQuantity(oreItem);
+        int diff = currentCount - lastKnownCount;
+
+        if (diff > 0)
+        {
+            for (int i = 0; i < diff; i++)
+                AddOre();
+        }
+        else if (diff < 0)
+        {
+            for (int i = 0; i < -diff; i++)
+                RemoveOre();
+        }
+
+        lastKnownCount = currentCount;
+    }
+
+    void AddOre()
     {
         if (orePrefab == null || dropPoint == null)
         {
@@ -53,8 +100,7 @@ public class OrePileManager : MonoBehaviour
         Debug.Log("Ore dropped into pile. Pile size: " + pile.Count);
     }
 
-    // Call this once per ore consumed (e.g. when smelting starts)
-    public void RemoveOre()
+    void RemoveOre()
     {
         if (pile.Count == 0)
         {

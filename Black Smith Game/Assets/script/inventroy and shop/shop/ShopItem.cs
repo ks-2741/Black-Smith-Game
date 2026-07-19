@@ -84,13 +84,6 @@ public class ShopItem : MonoBehaviour
 
         InventoryManager.Instance.AddItem(item, amountToBuy);
 
-        // If this is the ore item, also drop physical ore into the pile.
-        if (OrePileManager.Instance != null && OrePileManager.Instance.oreItem == item)
-        {
-            for (int i = 0; i < amountToBuy; i++)
-                OrePileManager.Instance.AddOre();
-        }
-
         Debug.Log("Bought " + amountToBuy + "x " + item.itemName + " for £" + totalCost);
 
         RefreshButtonState();
